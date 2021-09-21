@@ -76,6 +76,8 @@ jobs:
         uses: actions/checkout@v2
       - run: pipx install poetry
       - run: choco install visualstudio2019buildtools
+      - run: choco install vcredist140
+      - run: choco install microsoft-build-tools
       - run: choco install windows-sdk-10.0
       - name: build project
         run: |
