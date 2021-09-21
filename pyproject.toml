@@ -8,6 +8,9 @@ license = "gpl2"
 [tool.poetry.dependencies]
 python = "^3.9"
 PyQt5 = "^5.15.4"
+ffmpeg-python = "^0.2.0"
+sortedcontainers = "^2.4.0"
+ffsubsync = "^0.4.16"
 
 [tool.poetry.dev-dependencies]
 PyQt5-stubs = "^5.15.2"
