@@ -326,7 +326,7 @@ dev = ["nose", "check-manifest", "unittest2", "zest.releaser", "psutil", "memory
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "eb1935778ad803f11494a9201492f144ca41be0249358421a3cced8a94b1da7a"
+content-hash = "81bc0f346900c7349667ffa6d8efc9d676fce37e86d24a0ba06730817627c83f"
 
 [metadata.files]
 altgraph = [

@@ -1,5 +1,4 @@
 import os
-import platform
 import sys
 from pathlib import Path
 
@@ -11,16 +10,9 @@ from sortedcontainers import SortedList
 app = QApplication([])
 
 
-ffprobe_command = "ffprobe"
-ffmpeg_command = "ffmpeg"
-if platform.system() == "Windows":
-    ffprobe_command = "ffprobe.exe"
-    ffmpeg_command = "ffmpeg.exe"
-
-
 def check_if_video_file(filename):
     try:
-        probe = ffmpeg.probe(filename, cmd=ffprobe_command)
+        probe = ffmpeg.probe(filename)
     except ffmpeg.Error:
         return False
     video_stream = next(
@@ -64,11 +56,8 @@ for subtitle, video in zip(subtitle_files, video_files):
         subtitle,
         "-o",
         str(new_subtitle_name),
-        # "--ffmpegpath",
-        # ffmpeg_command,
     ]
-    if platform.system() == "Windows":
-        unparsed_args.append(["--ffmpegpath", ffmpeg_command])
+
     print(unparsed_args)
     parser = make_parser()
     args = parser.parse_args(args=unparsed_args)
