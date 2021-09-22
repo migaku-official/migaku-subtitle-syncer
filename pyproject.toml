@@ -11,7 +11,7 @@ PyQt5 = "^5.15.4"
 ffmpeg-python = "^0.2.0"
 sortedcontainers = "^2.4.0"
 ffsubsync = "^0.4.16"
-webrtcvad-wheels = "^2.0.10"
+webrtcvad = "^2.0.10"
 
 [tool.poetry.dev-dependencies]
 PyQt5-stubs = "^5.15.2"

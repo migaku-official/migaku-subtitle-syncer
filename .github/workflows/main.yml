@@ -75,10 +75,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - run: pipx install poetry
-      - run: choco install visualstudio2019buildtools
-      - run: choco install vcredist140
-      - run: choco install microsoft-build-tools
-      - run: choco install windows-sdk-10.0
+      - run: choco install visualstudio2019-workload-vctools -y
+      - run: pip install webrtcvad
       - name: build project
         run: |
           poetry config virtualenvs.in-project true
