@@ -62,3 +62,22 @@ for subtitle, video in zip(subtitle_files, video_files):
     parser = make_parser()
     args = parser.parse_args(args=unparsed_args)
     result = run(args)
+
+question = QMessageBox.question(
+    None,
+    "Save without \".synced\"",
+    """
+Would you like to save these subs without \".synced\", leave them as ".synced" or discard the resynced subtitles?
+Note that this may overwritte any existing subs with the same name
+    """,
+    buttons=QMessageBox.Save | QMessageBox.Close | QMessageBox.Discard
+)
+
+for subtitle_file in subtitle_files:
+    subtitle_filename = Path(subtitle_file)
+    old_subtitle_path = subtitle_filename.with_suffix(".synced" + subtitle_filename.suffix)
+
+    if question == QMessageBox.Save:
+        os.replace(subtitle_filename, old_subtitle_path)
+    elif question == QMessageBox.Discard:
+        os.remove(old_subtitle_path)
