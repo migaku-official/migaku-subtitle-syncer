@@ -39,7 +39,8 @@ if len(video_files) != len(subtitle_files):
         "Migaku Warning Dialog",
         """
 There is an uneven amount of video files and subtitles in this folder.
-Please make sure there are as many subtitles as there are video files.""",
+Please make sure there are as many subtitles as there are video files.
+        """,
         buttons=QMessageBox.Ok,
     )
     sys.exit(0)
@@ -62,3 +63,26 @@ for subtitle, video in zip(subtitle_files, video_files):
     parser = make_parser()
     args = parser.parse_args(args=unparsed_args)
     result = run(args)
+
+question = QMessageBox.question(
+    None,
+    'Save without ".synced"',
+    """
+Would you like to override the original subtitles, leave them as-is or discard all synced subtitles?
+Note: this will overwrite all existing subtitles with the same name!
+
+Save - Replaces each original subtitle with its synced counterpart
+Close - Quit as-is without renaming subtitles further
+Discard - Remove synced subtitles (in case of failure)
+    """,
+    buttons=QMessageBox.Save | QMessageBox.Close | QMessageBox.Discard
+)
+
+for subtitle_file in subtitle_files:
+    original_subtitle = Path(subtitle_file)
+    synced_subtitle = original_subtitle.with_suffix(".synced" + original_subtitle.suffix)
+
+    if question == QMessageBox.Save:
+        os.replace(synced_subtitle, original_subtitle)
+    elif question == QMessageBox.Discard:
+        os.remove(synced_subtitle)
