@@ -68,12 +68,12 @@ question = QMessageBox.question(
     None,
     'Save without ".synced"',
     """
-Would you like to override the original subtitles, leave them as-is or discard all resynced subtitles?
-Note: this may overwritte any existing subs with the same name
+Would you like to override the original subtitles, leave them as-is or discard all synced subtitles?
+Note: this will overwrite all existing subtitles with the same name!
 
-Save - Replaces each original subtitles with its resynced counterpart
+Save - Replaces each original subtitle with its synced counterpart
 Close - Quit as-is without renaming subtitles further
-Discard - Remove resynced subtitles (in case of failure)
+Discard - Remove synced subtitles (in case of failure)
     """,
     buttons=QMessageBox.Save | QMessageBox.Close | QMessageBox.Discard
 )
