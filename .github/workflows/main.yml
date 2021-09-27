@@ -30,7 +30,7 @@ jobs:
             cd /build &&
             poetry config virtualenvs.in-project true &&
             poetry install &&
-            poetry run pyinstaller --clean --onefile migaku-subtitle-syncer.py
+            poetry run pyinstaller --clean --onefile --add-binary 'binaries/linux:.' migaku-subtitle-syncer.py
 
       - name: rename binary
         run: sudo mv dist/migaku-subtitle-syncer dist/migaku-subtitle-syncer-linux
@@ -56,9 +56,12 @@ jobs:
         run: |
           poetry config virtualenvs.in-project true
           poetry install
-          poetry run pyinstaller --onefile --clean --add-binary 'binaries/mac:.' migaku-subtitle-syncer.py
+          poetry run pyinstaller --onefile --windowed --clean --add-binary 'binaries/mac:.' migaku-subtitle-syncer.py
       - name: rename binary
-        run: mv dist/migaku-subtitle-syncer dist/migaku-subtitle-syncer-mac
+        run: mv dist/migaku-player-converter dist/migaku-subtitle-syncer-mac
+      - name: rename binary
+        run: mv dist/migaku-player-converter.app dist/migaku-subtitle-syncer-mac.app
+
       - name: release-mac
         uses: ncipollo/release-action@v1.8.9
         id: create_release
