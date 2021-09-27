@@ -1,6 +1,9 @@
 import os
+import platform
 import sys
 from pathlib import Path
+from shutil import which
+from typing import Optional
 
 import ffmpeg
 from ffsubsync.ffsubsync import make_parser, run
@@ -9,10 +12,40 @@ from sortedcontainers import SortedList
 
 app = QApplication([])
 
+ffprobe_command: Optional[str] = ""
+ffmpeg_command: Optional[str] = ""
+
+if os.path.isfile("./ffprobe"):
+    ffprobe_command = "./ffprobe"
+if os.path.isfile("./ffmpeg"):
+    ffmpeg_command = "./ffmpeg"
+if platform.system() == "Windows":
+    ffprobe_command = "ffprobe.exe"
+    ffmpeg_command = "ffmpeg.exe"
+
+if not ffprobe_command:
+    ffprobe_command = which("ffprobe")
+if not ffmpeg_command:
+    ffmpeg_command = which("ffmpeg")
+
+missing_program = ""
+if not ffprobe_command:
+    missing_program = "ffprobe"
+if not ffmpeg_command:
+    missing_program = "ffmpeg"
+if missing_program:
+    QMessageBox.critical(
+        None,
+        "Migaku Error Dialog",
+        f"It seems {missing_program} is not installed. Please retry after installing",
+        buttons=QMessageBox.Ok,
+    )
+    sys.exit(1)
+
 
 def check_if_video_file(filename):
     try:
-        probe = ffmpeg.probe(filename)
+        probe = ffmpeg.probe(filename, ffprobe_command)
     except ffmpeg.Error:
         return False
     video_stream = next(
@@ -24,6 +57,18 @@ def check_if_video_file(filename):
 
 
 current_dir_files = os.listdir(os.curdir)
+if (
+    platform.system() == "Darwin"
+    and getattr(sys, "frozen", False)
+    and "Contents" in str(os.path.abspath(getattr(sys, "executable", os.curdir)))
+):
+    bundle_dir = Path(
+        os.path.dirname(os.path.abspath(getattr(sys, "executable", os.curdir)))
+    )
+    basepath = str(bundle_dir.parent.parent.parent.absolute())
+    current_dir_files = os.listdir(basepath)
+    current_dir_files = [os.path.join(basepath, file) for file in current_dir_files]
+
 video_files = SortedList(list(filter(check_if_video_file, current_dir_files)))
 subtitle_files = SortedList(
     [
@@ -51,12 +96,16 @@ for subtitle, video in zip(subtitle_files, video_files):
         ".synced" + subtitle_filename.suffix
     )
 
+    ffmpeg_parent_folder = Path(ffmpeg_command).parent
+
     unparsed_args = [
         video,
         "-i",
         subtitle,
         "-o",
         str(new_subtitle_name),
+        "--ffmpegpath",
+        str(ffmpeg_parent_folder),
     ]
 
     print(unparsed_args)
@@ -75,12 +124,14 @@ Save - Replaces each original subtitle with its synced counterpart
 Close - Quit as-is without renaming subtitles further
 Discard - Remove synced subtitles (in case of failure)
     """,
-    buttons=QMessageBox.Save | QMessageBox.Close | QMessageBox.Discard
+    buttons=QMessageBox.Save | QMessageBox.Close | QMessageBox.Discard,
 )
 
 for subtitle_file in subtitle_files:
     original_subtitle = Path(subtitle_file)
-    synced_subtitle = original_subtitle.with_suffix(".synced" + original_subtitle.suffix)
+    synced_subtitle = original_subtitle.with_suffix(
+        ".synced" + original_subtitle.suffix
+    )
 
     if question == QMessageBox.Save:
         os.replace(synced_subtitle, original_subtitle)
