@@ -57,10 +57,14 @@ jobs:
           poetry config virtualenvs.in-project true
           poetry install
           poetry run pyinstaller --onefile --windowed --clean --add-binary 'binaries/mac:.' migaku-subtitle-syncer.py
+      - name: Create release dir
+        run: mkdir release
       - name: rename binary
-        run: mv dist/migaku-player-converter dist/migaku-subtitle-syncer-mac
+        run: mv dist/migaku-subtitle-syncer release/migaku-subtitle-syncer-mac
       - name: rename binary
-        run: mv dist/migaku-player-converter.app dist/migaku-subtitle-syncer-mac.app
+        run: mv dist/migaku-subtitle-syncer.app dist/migaku-subtitle-syncer-mac.app
+      - name: Bundle dmg
+        run: hdiutil create -volname migaku-subtitle-syncer -srcfolder dist/ -ov -format UDZO release/migaku-subtitle-syncer-mac.dmg
 
       - name: release-mac
         uses: ncipollo/release-action@v1.8.9
@@ -69,7 +73,7 @@ jobs:
           draft: false
           allowUpdates: true
           prerelease: true
-          artifacts: "dist/*"
+          artifacts: "release/*"
 
   build-windows:
     # The type of runner that the job will run on
