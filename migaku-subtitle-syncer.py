@@ -1,3 +1,4 @@
+import multiprocessing
 import os
 import platform
 import sys
@@ -9,6 +10,9 @@ import ffmpeg
 from ffsubsync.ffsubsync import make_parser, run
 from PyQt5.QtWidgets import QApplication, QMessageBox
 from sortedcontainers import SortedList
+
+multiprocessing.freeze_support()
+
 
 app = QApplication([])
 
@@ -56,9 +60,7 @@ def check_if_video_file(filename):
         probe = ffmpeg.probe(filename, ffprobe_command)
     except ffmpeg.Error:
         return False
-    video_stream = next(
-        (stream for stream in probe["streams"] if stream["codec_type"] == "video"), None
-    )
+    video_stream = next((stream for stream in probe["streams"] if stream["codec_type"] == "video"), None)
     if video_stream is None:
         return False
     return True
@@ -70,21 +72,13 @@ if (
     and getattr(sys, "frozen", False)
     and "Contents" in str(os.path.abspath(getattr(sys, "executable", os.curdir)))
 ):
-    bundle_dir = Path(
-        os.path.dirname(os.path.abspath(getattr(sys, "executable", os.curdir)))
-    )
+    bundle_dir = Path(os.path.dirname(os.path.abspath(getattr(sys, "executable", os.curdir))))
     basepath = str(bundle_dir.parent.parent.parent.absolute())
     current_dir_files = os.listdir(basepath)
     current_dir_files = [os.path.join(basepath, file) for file in current_dir_files]
 
 video_files = SortedList(list(filter(check_if_video_file, current_dir_files)))
-subtitle_files = SortedList(
-    [
-        file
-        for file in current_dir_files
-        if any(ext in file for ext in ["srt", "ass", "ssa"])
-    ]
-)
+subtitle_files = SortedList([file for file in current_dir_files if any(ext in file for ext in ["srt", "ass", "ssa"])])
 
 if len(video_files) != len(subtitle_files):
     button = QMessageBox.warning(
@@ -100,9 +94,7 @@ Please make sure there are as many subtitles as there are video files.
 
 for subtitle, video in zip(subtitle_files, video_files):
     subtitle_filename = Path(subtitle)
-    new_subtitle_name = subtitle_filename.with_suffix(
-        ".synced" + subtitle_filename.suffix
-    )
+    new_subtitle_name = subtitle_filename.with_suffix(".synced" + subtitle_filename.suffix)
 
     ffmpeg_parent_folder = Path(ffmpeg_command).parent
 
@@ -135,9 +127,7 @@ Close - Quit as-is without renaming subtitles further
 
 for subtitle_file in subtitle_files:
     original_subtitle = Path(subtitle_file)
-    synced_subtitle = original_subtitle.with_suffix(
-        ".synced" + original_subtitle.suffix
-    )
+    synced_subtitle = original_subtitle.with_suffix(".synced" + original_subtitle.suffix)
 
     if question == QMessageBox.Save:
         os.replace(synced_subtitle, original_subtitle)
