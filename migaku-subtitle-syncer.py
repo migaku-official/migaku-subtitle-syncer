@@ -1,3 +1,4 @@
+import logging
 import multiprocessing
 import os
 import platform
@@ -11,6 +12,9 @@ from ffsubsync.ffsubsync import make_parser, run
 from PyQt5.QtWidgets import QApplication, QMessageBox
 from sortedcontainers import SortedList
 
+LOGLEVEL = os.environ.get("LOGLEVEL", "WARNING").upper()
+logging.basicConfig(level=LOGLEVEL)
+
 multiprocessing.freeze_support()
 
 
@@ -23,6 +27,7 @@ ffmpeg_command: Optional[str] = ""
 def resource_path(relative_path):
     """Get absolute path to resource, works for dev and for PyInstaller"""
     base_path = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
+    logging.debug(f"base path: {base_path}")
     return os.path.join(base_path, relative_path)
 
 
@@ -31,8 +36,8 @@ if os.path.isfile(resource_path("./ffprobe")):
 if os.path.isfile(resource_path("./ffmpeg")):
     ffmpeg_command = resource_path("./ffmpeg")
 if platform.system() == "Windows":
-    ffprobe_command = "ffprobe.exe"
-    ffmpeg_command = "ffmpeg.exe"
+    ffprobe_command = resource_path("ffprobe.exe")
+    ffmpeg_command = resource_path("ffmpeg.exe")
 
 
 if not ffprobe_command:
@@ -53,6 +58,9 @@ if missing_program:
         buttons=QMessageBox.Ok,
     )
     sys.exit(1)
+
+logging.info(f"ffprobe path: {ffprobe_command}")
+logging.info(f"ffmpeg path: {ffmpeg_command}")
 
 
 def check_if_video_file(filename):
@@ -96,7 +104,10 @@ for subtitle, video in zip(subtitle_files, video_files):
     subtitle_filename = Path(subtitle)
     new_subtitle_name = subtitle_filename.with_suffix(".synced" + subtitle_filename.suffix)
 
-    ffmpeg_parent_folder = Path(ffmpeg_command).parent
+    ffmpeg_parent_folder = Path(os.path.abspath(ffmpeg_command)).parent
+    logging.debug(f"ffmpeg parent: {ffmpeg_parent_folder}")
+    logging.debug(f"video: {video}")
+    logging.debug(f"subtitle: {subtitle}")
 
     unparsed_args = [
         video,
