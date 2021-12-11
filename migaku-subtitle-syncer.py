@@ -7,7 +7,6 @@ from pathlib import Path
 from shutil import which
 from typing import Optional
 
-import ffmpeg
 from ffsubsync.ffsubsync import make_parser, run
 from PyQt5.QtWidgets import QApplication, QMessageBox
 from sortedcontainers import SortedList
@@ -62,16 +61,60 @@ if missing_program:
 logging.info(f"ffprobe path: {ffprobe_command}")
 logging.info(f"ffmpeg path: {ffmpeg_command}")
 
+video_file_endings = [
+    ".webm",
+    ".mkv",
+    ".flv",
+    ".flv",
+    ".vob",
+    ".ogv",
+    ".ogg",
+    ".drc",
+    ".gif",
+    ".gifv",
+    ".mng",
+    ".avi",
+    ".MTS",
+    ".M2TS",
+    ".TS",
+    ".mov",
+    ".qt",
+    ".wmv",
+    ".yuv",
+    ".rm",
+    ".rmvb",
+    ".viv",
+    ".asf",
+    ".amv",
+    ".mp4",
+    ".m4p",
+    ".m4v",
+    ".mpg",
+    ".mp2",
+    ".mpeg",
+    ".mpe",
+    ".mpv",
+    ".mpg",
+    ".mpeg",
+    ".m2v",
+    ".m4v",
+    ".svi",
+    ".3gp",
+    ".3g2",
+    ".mxf",
+    ".roq",
+    ".nsv",
+    ".flv",
+    ".f4v",
+    ".f4p",
+    ".f4a",
+    ".f4b",
+]
+
 
 def check_if_video_file(filename):
-    try:
-        probe = ffmpeg.probe(filename, ffprobe_command)
-    except ffmpeg.Error:
-        return False
-    video_stream = next((stream for stream in probe["streams"] if stream["codec_type"] == "video"), None)
-    if video_stream is None:
-        return False
-    return True
+    file_extension = Path(filename).suffix
+    return bool(any(ext == file_extension for ext in video_file_endings))
 
 
 current_dir_files = os.listdir(os.curdir)
@@ -86,7 +129,9 @@ if (
     current_dir_files = [os.path.join(basepath, file) for file in current_dir_files]
 
 video_files = SortedList(list(filter(check_if_video_file, current_dir_files)))
-subtitle_files = SortedList([file for file in current_dir_files if any(ext in file for ext in ["srt", "ass", "ssa"])])
+subtitle_files = SortedList(
+    [file for file in current_dir_files if any(ext == Path(file).suffix for ext in ["srt", "ass", "ssa"])]
+)
 
 if len(video_files) != len(subtitle_files):
     button = QMessageBox.warning(
