@@ -130,7 +130,7 @@ if (
 
 video_files = SortedList(list(filter(check_if_video_file, current_dir_files)))
 subtitle_files = SortedList(
-    [file for file in current_dir_files if any(ext == Path(file).suffix for ext in ["srt", "ass", "ssa"])]
+    [file for file in current_dir_files if any(ext == Path(file).suffix for ext in [".srt", ".ass", ".ssa"])]
 )
 
 if len(video_files) != len(subtitle_files):
